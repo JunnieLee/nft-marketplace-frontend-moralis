@@ -18,6 +18,7 @@ async function main() {
         chainId: moralisChainId,
         syncHistorical: true,
         topic: "ItemListed(address, address, uint256, uint256)",
+        address: contractAddress,
         abi: {
             anonymous: false,
             inputs: [
@@ -50,6 +51,93 @@ async function main() {
             type: "event",
         },
         tableName: "ItemListed",
+    }
+
+    let itemBoughtOptions = {
+        chainId: moralisChainId,
+        address: contractAddress,
+        sync_historical: true,
+        topic: "ItemBought(address,address,uint256,uint256)",
+        abi: {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: "address",
+                    name: "buyer",
+                    type: "address",
+                },
+                {
+                    indexed: true,
+                    internalType: "address",
+                    name: "nftAddress",
+                    type: "address",
+                },
+                {
+                    indexed: true,
+                    internalType: "uint256",
+                    name: "tokenId",
+                    type: "uint256",
+                },
+                {
+                    indexed: false,
+                    internalType: "uint256",
+                    name: "price",
+                    type: "uint256",
+                },
+            ],
+            name: "ItemBought",
+            type: "event",
+        },
+        tableName: "ItemBought",
+    }
+
+    let itemCanceledOptions = {
+        chainId: moralisChainId,
+        address: contractAddress,
+        topic: "ItemCanceled(address,address,uint256)",
+        sync_historical: true,
+        abi: {
+            anonymous: false,
+            inputs: [
+                {
+                    indexed: true,
+                    internalType: "address",
+                    name: "seller",
+                    type: "address",
+                },
+                {
+                    indexed: true,
+                    internalType: "address",
+                    name: "nftAddress",
+                    type: "address",
+                },
+                {
+                    indexed: true,
+                    internalType: "uint256",
+                    name: "tokenId",
+                    type: "uint256",
+                },
+            ],
+            name: "ItemCanceled",
+            type: "event",
+        },
+        tableName: "ItemCanceled",
+    }
+
+    const listedResponse = await Moralis.Cloud.run("watchContractEvent", itemListedOptions, {
+        useMasterKey: true,
+    })
+    const boughtResponse = await Moralis.Cloud.run("watchContractEvent", itemBoughtOptions, {
+        useMasterKey: true,
+    })
+    const canceledResponse = await Moralis.Cloud.run("watchContractEvent", itemCanceledOptions, {
+        useMasterKey: true,
+    })
+    if (listedResponse.success && canceledResponse.success && boughtResponse.success) {
+        console.log("Success! Database Updated with watching events")
+    } else {
+        console.log("Something went wrong...")
     }
 }
 
