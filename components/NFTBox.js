@@ -6,8 +6,23 @@ import Image from "next/image"
 import { Card } from "web3uikit"
 import { ethers } from "ethers"
 
+const truncateStr = (fullStr, strLen) => {
+    if (fullStr.length <= strLen) return fullStr
+
+    const separator = "..."
+    const seperatorLength = separator.length
+    const charsToShow = strLen - seperatorLength
+    const frontChars = Math.ceil(charsToShow / 2)
+    const backChars = Math.floor(charsToShow / 2)
+    return (
+        fullStr.substring(0, frontChars) +
+        separator +
+        fullStr.substring(fullStr.length - backChars)
+    )
+}
+
 export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress, seller }) {
-    const { isWeb3Enabled } = useMoralis()
+    const { isWeb3Enabled, account } = useMoralis()
     const [imageURI, setImageURI] = useState("")
     const [tokenName, setTokenName] = useState("")
     const [tokenDescription, setTokenDescription] = useState("")
@@ -48,6 +63,9 @@ export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress,
         }
     }, [isWeb3Enabled])
 
+    const isOwnedByUser = seller === account || seller === undefined
+    const formattedSellerAddress = isOwnedByUser ? "you" : truncateStr(seller || "", 15)
+
     return (
         <div>
             <div>
@@ -56,7 +74,9 @@ export default function NFTBox({ price, nftAddress, tokenId, marketplaceAddress,
                         <div className="p-2">
                             <div className="flex flex-col items-end gap-2">
                                 <div>#{tokenId}</div>
-                                <div className="italic text-sm">Owned by {seller}</div>
+                                <div className="italic text-sm">
+                                    Owned by {formattedSellerAddress}
+                                </div>
                                 <Image
                                     loader={() => imageURI}
                                     src={imageURI}
